@@ -1,28 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Logger Panel</title>
-    <style>
-        body {
-            background: #0f172a;
-            color: white;
-            font-family: Arial;
-        }
-        .log {
-            background: #1e293b;
-            margin: 10px;
-            padding: 10px;
-            border-radius: 8px;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>DayZ Surviv Panel</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: #e2e8f0;
+}
+
+/* HEADER */
+header {
+    background: #020617;
+    padding: 15px;
+    font-size: 20px;
+    border-bottom: 1px solid #1e293b;
+}
+
+/* LAYOUT */
+.container {
+    display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    background: #020617;
+    height: 100vh;
+    padding: 10px;
+    border-right: 1px solid #1e293b;
+}
+
+.tab {
+    padding: 12px;
+    margin: 5px 0;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.tab:hover {
+    background: #1e293b;
+}
+
+.active {
+    background: #334155;
+}
+
+/* MAIN */
+.main {
+    flex: 1;
+    padding: 20px;
+}
+
+/* LOG CARD */
+.log {
+    background: #1e293b;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    border-left: 4px solid #38bdf8;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1;}
+}
+
+.title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.meta {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 12px;
+    margin-top: 10px;
+    color: #cbd5f5;
+}
+</style>
 </head>
+
 <body>
 
-<h1>🛡️ Live Logger</h1>
-<div id="logs"></div>
+<header>
+🛡️ DayZ Surviv — Admin Panel
+</header>
+
+<div class="container">
+
+<div class="sidebar">
+    <div class="tab active">📡 Live Logs</div>
+    <div class="tab">📊 Statistics</div>
+    <div class="tab">🚨 Detections</div>
+    <div class="tab">👤 Players</div>
+    <div class="tab">⚙️ Settings</div>
+</div>
+
+<div class="main">
+    <h2>📡 Live Logger</h2>
+    <div id="logs"></div>
+</div>
+
+</div>
 
 <script>
-const ws = new WebSocket(`wss://${location.host}`);
+const protocol = location.protocol === "https:" ? "wss://" : "ws://";
+const ws = new WebSocket(protocol + location.host);
 
 ws.onmessage = (event) => {
     const data = JSON.parse(event.data);
@@ -30,11 +123,16 @@ ws.onmessage = (event) => {
     const div = document.createElement("div");
     div.className = "log";
 
+    // 🔍 пытаемся вытащить данные (если они есть)
+    let key = data.key || data?.embeds?.[0]?.description || "Unknown key";
+    let player = data.player || "Unknown player";
+    let steam = data.steamid || "Unknown SteamID";
+    let pos = data.position || "Unknown position";
+
     div.innerHTML = `
-        ⌨️ ${data.key || "?"}<br>
-        👤 ${data.player || "?"}<br>
-        🆔 ${data.steamid || "?"}<br>
-        📍 ${data.position || "?"}
+        <div class="title">⌨️ ${key}</div>
+        <div class="meta">👤 ${player} | 🆔 ${steam} | 📍 ${pos}</div>
+        <pre>${JSON.stringify(data, null, 2)}</pre>
     `;
 
     document.getElementById("logs").prepend(div);
